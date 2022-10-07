@@ -1,0 +1,16 @@
+---
+title: "p8105_hw3_wm2460"
+author: "Wenyan Ma"
+date: "2022-10-07"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+## Problem 2
+
+## Problem 3
