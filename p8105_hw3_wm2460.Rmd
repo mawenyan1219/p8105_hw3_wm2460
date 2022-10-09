@@ -7,10 +7,88 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(p8105.datasets)
 ```
 
 ## Problem 1
 
 ## Problem 2
 
+### Step 1: Tidy the dataset
+```{r tidy}
+accel_df = read_csv("./accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440, 
+    names_prefix = "activity_", 
+    names_to = "minute", 
+    values_to = "activity") %>% 
+  mutate(minute = as.numeric(minute), 
+         day_of_week = recode(day,"Monday" = "Weekday", 
+                                   "Tuesday" = "Weekday", 
+                                   "Wednesday" = "Weekday", 
+                                   "Thursday" = "Weekday", 
+                                   "Friday" = "Weekday", 
+                                   "Saturday" = "Weekend", 
+                                   "Sunday" = "Weekend"))
+```
+
+#### Describe the dataset
+
+In the `accel_df` dataset, there are `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. The variables in this dataset include `r colnames(accel_df)`. 
+
+### Step 2: Traditional analyses of accelerometer data
+```{r traditional_analyses}
+traditional = accel_df %>%
+  group_by(week, day) %>%
+  summarize(activity_sum = sum(activity)) %>% 
+  knitr::kable(
+    caption = "Total activity for each day")
+```
+
+#### Trend
+
+The trend is apparent. The total activity across Monday to Friday is more than the total activity done during the weeekend. 
+
+
+### Step 3: Single-panel plot
+```{r plot}
+accel_df %>% 
+  ggplot(aes(x = minute/60, y = activity, color = day)) + 
+  geom_line(alpha = .5) +
+  labs(title = "24-hour activity time courses for each day",
+       x = "Hour",
+       y = "Activity measured by accelerometer") +
+  theme_bw()
+
+```
+
+#### Patterns 
+
+From the plot above, we can see that from hour 0 to hour 5, there were usually not a lot of activity detected by the accelerometer. Between hour 6 and hour 19, there are some more activity than the earlier hours. However, most intense activity patterns usually happen between hour 19 and hour 22. This pattern is quite consistent across all 7 days of the week. 
+
+
 ## Problem 3
+
+```{r exploration}
+data("ny_noaa")
+```
+
+### Exploration of this dataset
+In the original `ny_noaa` dataset, there are `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. The variables in this dataset include `r colnames(ny_noaa)`.
+
+There are a lot of observations with missing values in this dataset. For the variable `prcp`, there are `r sum(is.na(ny_noaa$prcp))` missing values. For the variable `snow`, there are `r sum(is.na(ny_noaa$snow))` missing values. For the variable `snwd`, there are `r sum(is.na(ny_noaa$snwd))` missing values. For the variable `tmax`, there are `r sum(is.na(ny_noaa$tmax))` missing values. For the variable `tmin`, there are `r sum(is.na(ny_noaa$tmin))` missing values. 
+
+### Step 1: Data cleaning
+```{r cleaning}
+noaa_new = ny_noaa %>% 
+  janitor::clean_names() %>%
+  separate(date, into = c("year", "month", "day"), convert = TRUE) %>% 
+  filter(prcp >= "0", snow >= "0", snwd >= "0")
+
+names(sort(-table(noaa_new$snow)))[1]
+```
+
+
+
