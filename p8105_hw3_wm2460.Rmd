@@ -9,6 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
+library(patchwork)
 ```
 
 ## Problem 1
@@ -53,7 +54,7 @@ The trend is apparent. The total activity across Monday to Friday is more than t
 
 
 ### Step 3: Single-panel plot
-```{r plot}
+```{r single_plot}
 accel_df %>% 
   ggplot(aes(x = minute/60, y = activity, color = day)) + 
   geom_line(alpha = .5) +
@@ -85,10 +86,73 @@ There are a lot of observations with missing values in this dataset. For the var
 noaa_new = ny_noaa %>% 
   janitor::clean_names() %>%
   separate(date, into = c("year", "month", "day"), convert = TRUE) %>% 
+  mutate(tmax = as.numeric(tmax), 
+         tmin = as.numeric(tmin),
+         tmin = tmin / 10,
+         tmax = tmax / 10) %>% 
   filter(prcp >= "0", snow >= "0", snwd >= "0")
 
 names(sort(-table(noaa_new$snow)))[1]
 ```
+
+#### For snowfall, what are the most commonly observed values? Why?
+
+For snowfall, the most commonly observed values are 0. Because it is more common for most stations to detect 0 snow. 
+
+### Step 2: Two-panel plot for average max temp
+```{r plot}
+plot = noaa_new %>% 
+  filter(month %in% c("1", "7")) %>% 
+  group_by(year, month, id) %>% 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE))
+
+plot %>%
+  ggplot(aes(x = year, y = mean_tmax)) + 
+    geom_point(alpha = 0.5) + geom_line() + 
+    facet_grid(. ~ month) +
+    labs(title = 
+           "Average max temperature in January and in July in each station across years",
+       x = "Year",
+       y = "Average max temperature") 
+```
+
+#### Is there any observable / interpretable structure? Any outliers?
+In my opinion, it is clear that the average max temperature in January is much lower than the average max temperature in July. There were some outliers for both months, especially for January.
+
+
+### Step 3: Plots for tmin vs tmax and snowfall
+
+#### Plot for tmin vs tmax
+```{r tmin_tmax}
+vs_p = 
+  noaa_new %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_smooth(se = FALSE) 
+
+vs_p
+```
+
+
+#### Plot for snowfall
+```{r snowfall}
+snowfall_p = 
+  noaa_new %>% 
+  filter(snow %in% (0:100)) %>% 
+  group_by(year) %>% 
+  ggplot(aes(x = year, y = snow)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) 
+  
+snowfall_p
+```
+
+#### Making the plots into a two-panel plot
+```{r combine_plots}
+(vs_p + snowfall_p)
+```
+
+
+
 
 
 
