@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
 library(patchwork)
+library(ggridges)
 ```
 
 ## Problem 1
@@ -44,8 +45,8 @@ In the `accel_df` dataset, there are `r nrow(accel_df)` observations and `r ncol
 traditional = accel_df %>%
   group_by(week, day) %>%
   summarize(activity_sum = sum(activity)) %>% 
-  knitr::kable(
-    caption = "Total activity for each day")
+  pivot_wider(names_from = day,
+              values_from = activity_sum)
 ```
 
 #### Trend
@@ -58,6 +59,7 @@ The trend is apparent. The total activity across Monday to Friday is more than t
 accel_df %>% 
   ggplot(aes(x = minute/60, y = activity, color = day)) + 
   geom_line(alpha = .5) +
+  geom_smooth(aes(group = day), se = FALSE) +
   labs(title = "24-hour activity time courses for each day",
        x = "Hour",
        y = "Activity measured by accelerometer") +
@@ -90,34 +92,43 @@ noaa_new = ny_noaa %>%
          tmin = as.numeric(tmin),
          tmin = tmin / 10,
          tmax = tmax / 10) %>% 
-  filter(prcp >= "0", snow >= "0", snwd >= "0")
+  filter(prcp >= "0", snow >= "0")
 
-names(sort(-table(noaa_new$snow)))[1]
+```
+
+```{r snowfall_mode}
+ny_noaa %>% 
+  count(snow) %>% 
+  arrange(desc(n))
 ```
 
 #### For snowfall, what are the most commonly observed values? Why?
 
-For snowfall, the most commonly observed values are 0. Because it is more common for most stations to detect 0 snow. 
+For snowfall, the most commonly observed values is 0. Because it did not snow in most days in New York state. The second most observed value is `NA`, which means the value is missing. 
+
+As a note, I believe that mm is an appropriate unit for the `snow` variable, therefore I will use the original variable to proceed. 
+
 
 ### Step 2: Two-panel plot for average max temp
 ```{r plot}
-plot = noaa_new %>% 
-  filter(month %in% c("1", "7")) %>% 
-  group_by(year, month, id) %>% 
-  summarize(mean_tmax = mean(tmax, na.rm = TRUE))
-
-plot %>%
-  ggplot(aes(x = year, y = mean_tmax)) + 
-    geom_point(alpha = 0.5) + geom_line() + 
+avg_max = noaa_new %>% 
+  group_by(id, year, month) %>% 
+  filter(month %in% c(1, 7)) %>% 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE, color = id)) %>% 
+  ggplot(aes(x = year, y = mean_tmax, group = id)) + 
+    geom_point(alpha = 0.25) + 
+    geom_line(alpha = 0.25) + 
     facet_grid(. ~ month) +
     labs(title = 
            "Average max temperature in January and in July in each station across years",
        x = "Year",
        y = "Average max temperature") 
+
+avg_max
 ```
 
 #### Is there any observable / interpretable structure? Any outliers?
-In my opinion, it is clear that the average max temperature in January is much lower than the average max temperature in July. There were some outliers for both months, especially for January.
+In my opinion, it is clear that the average max temperature in January is much lower than the average max temperature in July. There were some outliers for both months, especially for January. There is one outlier for July as well. 
 
 
 ### Step 3: Plots for tmin vs tmax and snowfall
@@ -127,9 +138,11 @@ In my opinion, it is clear that the average max temperature in January is much l
 vs_p = 
   noaa_new %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
-  geom_smooth(se = FALSE) 
+  geom_hex() +
+  labs(title = "Tmin vs Tmax") 
 
 vs_p
+
 ```
 
 
@@ -139,15 +152,17 @@ snowfall_p =
   noaa_new %>% 
   filter(snow %in% (0:100)) %>% 
   group_by(year) %>% 
-  ggplot(aes(x = year, y = snow)) + 
-  geom_point(alpha = .5) +
-  geom_smooth(se = FALSE) 
+  ggplot(aes(x = snow, y = as.factor(year))) +
+  geom_density_ridges() +
+  labs(title = "Distribution of snowfall values by year", 
+       x = "Snowfall in mm",
+       y = "Year") 
   
 snowfall_p
 ```
 
 #### Making the plots into a two-panel plot
-```{r combine_plots}
+```{r combine_plots, width = 10}
 (vs_p + snowfall_p)
 ```
 
