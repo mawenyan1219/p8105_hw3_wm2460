@@ -66,7 +66,6 @@ instacart %>%
   geom_point() + 
   labs(title = "Number of items ordered in each aisle") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
-
 ```
 
 Our next table shows the three most popular items in aisles `baking ingredients`, `dog food care`, and `packaged vegetables fruits`, and includes the number of times each item is ordered in your table.
@@ -123,7 +122,7 @@ In the `accel_df` dataset, there are `r nrow(accel_df)` observations and `r ncol
 traditional = accel_df %>%
   group_by(week, day) %>%
   summarize(activity_sum = sum(activity)) %>% 
-  arrange(week, desc(activity_sum)) %>%
+  arrange(week, (activity_sum)) %>%
   pivot_wider(names_from = day,
               values_from = activity_sum) %>% 
   knitr::kable()
@@ -145,9 +144,6 @@ accel_df %>%
        x = "Hour",
        y = "Activity measured by accelerometer") +
   theme_bw()
-
-
-# or add  geom_smooth(aes(group = day), se = FALSE) + before labs #
 ```
 
 #### Patterns 
@@ -176,7 +172,6 @@ noaa_new = ny_noaa %>%
          tmin = tmin / 10,
          tmax = tmax / 10,
          prcp = prcp / 10) 
-
 ```
 
 ```{r snowfall_mode}
@@ -225,7 +220,6 @@ vs_p =
   labs(title = "Tmin vs Tmax") 
 
 vs_p
-
 ```
 
 
