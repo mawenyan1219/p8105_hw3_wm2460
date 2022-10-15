@@ -188,15 +188,16 @@ As a note, I believe that mm is an appropriate unit for the `snow` variable, the
 
 
 ### Step 2: Two-panel plot for average max temp
-```{r plot}
+```{r avemax_plot}
 avg_max = noaa_new %>% 
   group_by(id, year, month) %>% 
   filter(month %in% c("1", "7")) %>% 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
-  ggplot(aes(x = year, y = mean_tmax)) + 
+  ggplot(aes(x = year, y = mean_tmax, colour = id)) + 
     geom_point(alpha = 0.25) + 
     geom_line(alpha = 0.25) + 
     facet_grid(. ~ month) +
+    theme(legend.position = "none") +
     labs(title = 
            "Average max temperature in January and in July in each station across years",
        x = "Year",
