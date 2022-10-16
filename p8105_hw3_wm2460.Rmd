@@ -192,6 +192,7 @@ As a note, I believe that mm is an appropriate unit for the `snow` variable, the
 avg_max = noaa_new %>% 
   group_by(id, year, month) %>% 
   filter(month %in% c("1", "7")) %>% 
+  mutate(month = month.abb[month]) %>% 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
   ggplot(aes(x = year, y = mean_tmax, colour = id)) + 
     geom_point(alpha = 0.25) + 
@@ -229,7 +230,7 @@ vs_p
 snowfall_p = 
   noaa_new %>% 
   group_by(year) %>% 
-  filter(snow %in% (0:100)) %>% 
+  filter(snow %in% (1:99)) %>% 
   ggplot(aes(x = snow, y = as.factor(year))) +
   geom_density_ridges() +
   labs(title = "Distribution of snowfall values by year", 
