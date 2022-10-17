@@ -148,7 +148,7 @@ accel_df %>%
 
 #### Patterns 
 
-From the plot above, we can see that from hour 0 to hour 5, there were usually not a lot of activity detected by the accelerometer. Between hour 6 and hour 19, there are some more activity than the earlier hours. However, most intense activity patterns usually happen between hour 19 and hour 22. This pattern is quite consistent across all 7 days of the week. 
+From the plot above, we can see that from hour 0 to hour 5, there are usually not a lot of activity detected by the accelerometer. Between hour 6 and hour 19, there are some more activity than the earlier hours. However, most intense activity patterns usually happen between hour 19 and hour 22. This pattern is quite consistent across all 7 days of the week. 
 
 
 ## Problem 3
@@ -202,13 +202,13 @@ avg_max = noaa_new %>%
     labs(title = 
            "Average max temperature in January and in July in each station across years",
        x = "Year",
-       y = "Average max temperature") 
+       y = "Average max temperature in Celcius") 
 
 avg_max
 ```
 
 #### Is there any observable / interpretable structure? Any outliers?
-In my opinion, it is clear that the average max temperature in January is much lower than the average max temperature in July. There were some outliers for both months, especially for January. Also, there is one outlier for July as well. 
+In my opinion, it is clear that the average max temperature in January is much lower than the average max temperature in July. There were some outliers for both months, especially for January. Also, there are a few outlier for July as well. 
 
 
 ### Step 3: Plots for tmin vs tmax and snowfall
@@ -219,11 +219,12 @@ vs_p =
   noaa_new %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_hex() +
-  labs(title = "Tmin vs Tmax") 
+  labs(title = "Tmax vs Tmin") 
 
 vs_p
 ```
 
+As shown in the graph, there is a positive relationship between `tmin` and `tmax`, as `tmin` increases, `tmax` also increases. 
 
 #### Plot for snowfall
 ```{r snowfall}
@@ -239,6 +240,8 @@ snowfall_p =
   
 snowfall_p
 ```
+
+From 1981 to 2010, we can see that there were usually 3-4 peaks observed in the distribution of the snowfall. 
 
 #### Making the plots into a two-panel plot
 ```{r combine_plots}
